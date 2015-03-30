@@ -20,9 +20,9 @@ public class DrawView extends SurfaceView implements SurfaceHolder.Callback {
     private List<Planet> planets = new ArrayList<>();
     private ScaleGestureDetector detector;
     private float translateX = 0.f, translateY = 0.f, scale = 1.f, scaleToX = 0.f, scaleToY = 0.f;
-    private float prevX, prevY, moveX = 0.f, moveY = 0.f, startX, startY;
+    private float prevX, prevY, startX, startY;
     private boolean move = true;
-    private float x0 = 0.f, y0 = 0.f, x, y;
+    private float x0 = 0.f, y0 = 0.f;
 
     public DrawView(Context context) {
         super(context);
@@ -56,6 +56,7 @@ public class DrawView extends SurfaceView implements SurfaceHolder.Callback {
                 drawThread.join();
                 retry = false;
             } catch (InterruptedException e) {
+                e.printStackTrace();
             }
         }
     }
@@ -65,18 +66,27 @@ public class DrawView extends SurfaceView implements SurfaceHolder.Callback {
 
     }
 
+
+
+    private Planet isPlanet(float x, float y) {
+        for (Planet planet : planets)
+            if (Vector.len(planet.getX(), planet.getY(), x, y) < planet.getRadius())
+                return planet;
+        return null;
+    }
+
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        int n = 0;
-        for (Player p : players)
-            n += p.getShips().size();
-        GameActivity.log(String.valueOf(n));
+//        int n = 0;
+//        for (Player p : players)
+//            n += p.getShips().size();
+//        GameActivity.log(String.valueOf(n));
 
         detector.onTouchEvent(event);
-        float x = (event.getX() - x0) / scale;
-        float y = (event.getY() - y0) / scale;
-        this.x = x;
-        this.y = y;
+        float x = event.getX();
+        float y = event.getY();
+        float realX = (x - x0) / scale;
+        float realY = (y - y0) / scale;
 
         if (event.getAction() == MotionEvent.ACTION_DOWN) {
             startX = x;
@@ -85,19 +95,19 @@ public class DrawView extends SurfaceView implements SurfaceHolder.Callback {
         if (detector.isInProgress())
             move = false;
         if (move && event.getAction() == MotionEvent.ACTION_MOVE) {
-            moveX += x - prevX;
-            moveY += y - prevY;
+            x0 += (x - prevX);
+            y0 += (y - prevY);
         }
         float maxLenToClick = 50;
-        if (event.getAction() == MotionEvent.ACTION_UP && Vector.len(x, y, startX, startY) / scale < maxLenToClick) {
-            if (isPlanet(x, y) != null)
+        if (event.getAction() == MotionEvent.ACTION_UP && Vector.len(x, y, startX, startY) < maxLenToClick) {
+            if (isPlanet(realX, realY) != null)
                 GameActivity.log("Click on the planet");
             else
                 GameActivity.log("Click");
 
 
             if (planetInFocus != null) {
-                Planet toThePlanet = isPlanet(x, y);
+                Planet toThePlanet = isPlanet(realX, realY);
                 if (toThePlanet != null) {
                     Goal goal = new Goal(toThePlanet, System.currentTimeMillis());
                     ArrayList<Ship> listOfShips = new ArrayList<>();
@@ -105,10 +115,11 @@ public class DrawView extends SurfaceView implements SurfaceHolder.Callback {
                     goals.put(goal, listOfShips);
                     toThePlanet.getShips().addAll(planetInFocus.getShips());
                     planetInFocus.getShips().clear();
+                    planetInFocus = null;
                 }
 
             } else {
-                Planet planet = isPlanet(x, y);
+                Planet planet = isPlanet(realX, realY);
                 if (planet == null) {
                     planetInFocus = null;
                 } else {
@@ -125,16 +136,7 @@ public class DrawView extends SurfaceView implements SurfaceHolder.Callback {
         return true;
     }
 
-    private Planet isPlanet(float x, float y) {
-        for (Planet planet : planets)
-            if (Vector.len(planet.getX(), planet.getY(), x, y) < planet.getRadius())
-                return planet;
-        return null;
-    }
-
     class MyScaleListener extends ScaleGestureDetector.SimpleOnScaleGestureListener {
-
-        private float realX, realY;
 
         @Override
         public boolean onScale(ScaleGestureDetector detector) {
@@ -143,12 +145,6 @@ public class DrawView extends SurfaceView implements SurfaceHolder.Callback {
             scale *= detector.getScaleFactor();
             x0 = focusX + detector.getScaleFactor() * (x0 - focusX);
             y0 = focusY + detector.getScaleFactor() * (y0 - focusY);
-            realX = (focusX - x0) / scale;
-            realY = (focusY - y0) / scale;
-            scaleToX = realX;
-            scaleToY = realY;
-            translateX = focusX - realX;
-            translateY = focusY - realY;
             return true;
         }
     }
@@ -233,17 +229,12 @@ public class DrawView extends SurfaceView implements SurfaceHolder.Callback {
 
         private void draw(Canvas canvas) {
             canvas.save();
-            canvas.translate(translateX, translateY); // translation of scaling
-            canvas.scale(scale, scale, scaleToX, scaleToY);
-            canvas.translate(moveX, moveY); // translation of finger moving
+            canvas.translate(x0, y0);
+            canvas.scale(scale, scale);
             drawBackground(canvas);
             drawAllObjects(canvas);
-            Paint p = new Paint();
-            p.setColor(Color.RED);
-            canvas.drawCircle(x, y, 20, p);
             canvas.restore();
-            p.setColor(Color.BLUE);
-            canvas.drawCircle(x0, y0, 20, p);
+
 
         }
 

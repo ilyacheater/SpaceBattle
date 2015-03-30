@@ -6,18 +6,20 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
 
 import java.util.Random;
-import java.util.concurrent.TimeUnit;
 
 
 public class GameActivity extends Activity {
     final static String TAG = "SpaceBattle_App";
-    DrawView drawView;
     static Random rand = new Random();
+    DrawView drawView;
     int width = 1200;
     int height = 1920;
+
+    public static void log(String s) {
+        Log.i(TAG, s);
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -25,10 +27,6 @@ public class GameActivity extends Activity {
         drawView = new DrawView(this);
         setContentView(drawView);
         generateLevel(20);
-    }
-
-    public static void log(String s) {
-        Log.i(TAG, s);
     }
 
     private void generateLevel(int qtyOfPlanets) {
@@ -52,7 +50,7 @@ public class GameActivity extends Activity {
                 planet = new Planet(x, y, r, player, health, vel, damage);
                 planet.getAirDefenses().add(planet.new AirDefense(rand.nextInt(70) + 30));
                 for (Planet p : drawView.getPlanets())
-                    if (length(planet, p) < planet.getRadius() + p.getRadius() + width / 5 ||
+                    if (length(planet, p) < planet.getRadius() + p.getRadius() + width / 10 ||
                             x + r > width || x - r < 0 || y + r > height || y - r < 0) {
                         retry = true;
                         break;
@@ -80,10 +78,6 @@ public class GameActivity extends Activity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        int id = item.getItemId();
-        if (id == R.id.action_settings) {
-            return true;
-        }
 
         return super.onOptionsItemSelected(item);
     }
