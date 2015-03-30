@@ -13,4 +13,8 @@ public class Vector {
     public static float len(Ship s1, Ship s2) {
         return len(s1.getX(), s1.getY(), s2.getX(), s2.getY());
     }
+
+    public static float len(Ship s, Planet p) {
+        return len(s.getX(), s.getY(), p.getX(), p.getY());
+    }
 }

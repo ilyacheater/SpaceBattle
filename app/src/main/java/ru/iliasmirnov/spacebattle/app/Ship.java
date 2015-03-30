@@ -2,15 +2,18 @@ package ru.iliasmirnov.spacebattle.app;
 
 public abstract class Ship{
     protected static float[][] circle = {{0, 0, 4}}; // [circle1, circle2][x, y, r]
+    protected static float goalAccel = 100;
     protected Player player;
     protected float x, y;
-    protected float sin, cos;
+    protected float sin = 1, cos = 0;
     private float startX, startY;
     private float health, velocity, damage;
     private float kElastic = 10;
     private float velX, velY, accelX, accelY;
-    private float maxVel;
-    private Planet planet;
+
+    public float getGoalAccel() {
+        return goalAccel;
+    }
 
     public float getStartX() {
         return startX;
@@ -121,11 +124,5 @@ public abstract class Ship{
         this.accelY = accelY;
     }
 
-    public float getMaxVel() {
-        return maxVel;
-    }
 
-    public void setMaxVel(float maxVel) {
-        this.maxVel = maxVel;
-    }
 }
