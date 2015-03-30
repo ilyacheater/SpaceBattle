@@ -1,37 +1,21 @@
 package ru.iliasmirnov.spacebattle.app;
 
 public class Goal {
-    private float startX, startY, endX, endY;
+    private Planet planet;
+    private long startT;
 
-    public float getStartX() {
-        return startX;
+    public Goal(Planet planet, long startT) {
+        this.planet = planet;
+        this.startT = startT;
     }
 
-    public void setStartX(float startX) {
-        this.startX = startX;
+    public Planet getPlanet() {
+        return planet;
     }
 
-    public float getStartY() {
-        return startY;
+    public long getStartT() {
+        return startT;
     }
 
-    public void setStartY(float startY) {
-        this.startY = startY;
-    }
 
-    public float getEndX() {
-        return endX;
-    }
-
-    public void setEndX(float endX) {
-        this.endX = endX;
-    }
-
-    public float getEndY() {
-        return endY;
-    }
-
-    public void setEndY(float endY) {
-        this.endY = endY;
-    }
 }

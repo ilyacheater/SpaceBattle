@@ -1,6 +1,9 @@
 package ru.iliasmirnov.spacebattle.app;
 
-import android.graphics.*;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.RectF;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,12 +29,11 @@ public class Planet {
         startAngle = -90;
     }
 
-    public List<Ship> getShips() {
-        return ships;
-    }
-
-    public Player getPlayer() {
-        return player;
+    public Planet(float x, float y, float radius, Player player, float healthOfShip, float velOfShip, float damageOfShip) {
+        this(x, y, radius, player);
+        this.healthOfShip = healthOfShip;
+        this.velOfShip = velOfShip;
+        this.damageOfShip = damageOfShip;
     }
 
     public static float getStartAngle() {
@@ -39,11 +41,12 @@ public class Planet {
         return startAngle;
     }
 
-    public Planet(float x, float y, float radius, Player player, float healthOfShip, float velOfShip, float damageOfShip) {
-        this(x, y, radius, player);
-        this.healthOfShip = healthOfShip;
-        this.velOfShip = velOfShip;
-        this.damageOfShip = damageOfShip;
+    public List<Ship> getShips() {
+        return ships;
+    }
+
+    public Player getPlayer() {
+        return player;
     }
 
     public float getHealthOfShip() {
@@ -96,20 +99,20 @@ public class Planet {
     class AirDefense{
         private float health;
 
-        public float getHealth() {
-            return health;
-        }
-
         public AirDefense(float health) {
             this.health = health;
+        }
+
+        public float getHealth() {
+            return health;
         }
 
 
     }
 
 class Factory {
-    private int duration = 3000;
     public long lasTime;
+    private int duration = 3000;
 
     public int getDuration() {
         return duration;
@@ -121,7 +124,9 @@ class Factory {
         float len = Vector.len(x, y);
         x = x / len * (radius + 5) + Planet.this.x;
         y = y / len * (radius + 5) + Planet.this.y;
-        player.getShips().add(new StandardShip(x, y, player));
+        Ship ship = new StandardShip(x, y, player);
+        player.getShips().add(ship);
+        ships.add(ship);
     }
 
 }
