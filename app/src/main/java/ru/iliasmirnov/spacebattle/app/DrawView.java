@@ -8,11 +8,12 @@ import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
-import java.util.TreeSet;
+import java.util.Map;
 
 public class DrawView extends SurfaceView implements SurfaceHolder.Callback {
-    private TreeSet<Float> goals = new TreeSet<>();
+    private Map<Goal, List> goal = new HashMap<>();
     private Planet planetInFocus;
     private boolean inFocus = false;
     private DrawThread drawThread;
