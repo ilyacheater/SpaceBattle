@@ -1,0 +1,40 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:tools="http://schemas.android.com/tools"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              tools:context=".MainActivity"
+              android:id="@+id/root"
+              android:paddingTop="100dp" android:paddingBottom="100dp"
+              android:paddingRight="50dp" android:paddingLeft="50dp">
+
+    <LinearLayout tools:context=".MainActivity" xmlns:android="http://schemas.android.com/apk/res/android"
+                  xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
+                  android:layout_height="match_parent" android:id="@+id/linearLayout" android:orientation="vertical">
+        <Button android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Create"
+                android:id="@+id/btnCreate" android:layout_weight="1" android:textSize="60dp" android:onClick="onPlay"/>
+        <Button
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Play"
+                android:id="@+id/btnPlay" android:layout_weight="1"
+                android:textSize="60dp" android:onClick="onPlay"
+                android:layout_marginTop="20dp" android:layout_marginBottom="20dp"/>
+        <LinearLayout
+                android:orientation="horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" android:layout_weight="1">
+            <Button
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:text="Help"
+                    android:id="@+id/btnHelp" android:layout_weight="1" android:textSize="60dp"
+                    android:layout_marginRight="20dp"/>
+            <Button
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:text="Settings"
+                    android:id="@+id/btnSettings" android:layout_weight="1" android:textSize="60dp"
+                    />
+        </LinearLayout>
+    </LinearLayout>
+</RelativeLayout>

@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="module_spacebattle" default="compile.module.spacebattle">
+  <dirname property="module.spacebattle.basedir" file="${ant.file.module_spacebattle}"/>
+  
+  <property name="module.jdk.home.spacebattle" value="${project.jdk.home}"/>
+  <property name="module.jdk.bin.spacebattle" value="${project.jdk.bin}"/>
+  <property name="module.jdk.classpath.spacebattle" value="${project.jdk.classpath}"/>
+  
+  <property name="compiler.args.spacebattle" value="-encoding windows-1251 -source 1.7 ${compiler.args}"/>
+  
+  <property name="spacebattle.output.dir" value="${module.spacebattle.basedir}/build/classes/production/SpaceBattle"/>
+  <property name="spacebattle.testoutput.dir" value="${module.spacebattle.basedir}/build/classes/test/SpaceBattle"/>
+  
+  <path id="spacebattle.module.bootclasspath">
+    <!-- Paths to be included in compilation bootclasspath -->
+  </path>
+  
+  <path id="spacebattle.module.production.classpath">
+    <path refid="${module.jdk.classpath.spacebattle}"/>
+  </path>
+  
+  <path id="spacebattle.runtime.production.module.classpath">
+    <pathelement location="${spacebattle.output.dir}"/>
+  </path>
+  
+  <path id="spacebattle.module.classpath">
+    <path refid="${module.jdk.classpath.spacebattle}"/>
+    <pathelement location="${spacebattle.output.dir}"/>
+  </path>
+  
+  <path id="spacebattle.runtime.module.classpath">
+    <pathelement location="${spacebattle.testoutput.dir}"/>
+    <pathelement location="${spacebattle.output.dir}"/>
+  </path>
+  
+  
+  <patternset id="excluded.from.module.spacebattle">
+    <patternset refid="ignored.files"/>
+  </patternset>
+  
+  <patternset id="excluded.from.compilation.spacebattle">
+    <patternset refid="excluded.from.module.spacebattle"/>
+  </patternset>
+  
+  
+  <target name="compile.module.spacebattle" depends="compile.module.spacebattle.production,compile.module.spacebattle.tests" description="Compile module SpaceBattle"/>
+  
+  <target name="compile.module.spacebattle.production" depends="register.custom.compilers" description="Compile module SpaceBattle; production classes"/>
+  
+  <target name="compile.module.spacebattle.tests" depends="register.custom.compilers,compile.module.spacebattle.production" description="compile module SpaceBattle; test classes" unless="skip.tests"/>
+  
+  <target name="clean.module.spacebattle" description="cleanup module">
+    <delete dir="${spacebattle.output.dir}"/>
+    <delete dir="${spacebattle.testoutput.dir}"/>
+  </target>
+</project>
