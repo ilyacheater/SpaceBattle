@@ -2,14 +2,23 @@ package ru.iliasmirnov.spacebattle.app;
 
 public abstract class Ship{
     protected static float[][] circle = {{0, 0, 4}}; // [circle1, circle2][x, y, r]
-    protected static float goalAccel = 100;
+    protected static float goalAccel = 1000;
     protected Player player;
     protected float x, y;
     protected float sin = 1, cos = 0;
+    protected Planet planet;
     private float startX, startY;
     private float health, velocity, damage;
     private float kElastic = 10;
     private float velX, velY, accelX, accelY;
+
+    public Planet getPlanet() {
+        return planet;
+    }
+
+    public void setPlanet(Planet planet) {
+        this.planet = planet;
+    }
 
     public float getGoalAccel() {
         return goalAccel;

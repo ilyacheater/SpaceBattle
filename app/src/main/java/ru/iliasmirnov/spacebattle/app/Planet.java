@@ -122,9 +122,9 @@ class Factory {
         float x = -1 + rand.nextFloat()*2;
         float y = -1 + rand.nextFloat()*2;
         float len = Vector.len(x, y);
-        x = x / len * (radius + 5) + Planet.this.x;
-        y = y / len * (radius + 5) + Planet.this.y;
-        Ship ship = new StandardShip(x, y, player);
+        x = x / len * (radius + 20) + Planet.this.x;
+        y = y / len * (radius + 20) + Planet.this.y;
+        Ship ship = new StandardShip(x, y, player, Planet.this);
         player.getShips().add(ship);
         ships.add(ship);
     }

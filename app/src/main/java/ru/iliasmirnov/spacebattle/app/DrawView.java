@@ -10,6 +10,9 @@ import android.view.SurfaceView;
 import java.util.*;
 
 public class DrawView extends SurfaceView implements SurfaceHolder.Callback {
+    private Bitmap shipBitmap;
+    private Canvas shipCanvas;
+    private Path shipPath;
     private Map<Goal, List> goals = new HashMap<>();
     private Planet planetInFocus;
     private DrawThread drawThread;
@@ -25,6 +28,7 @@ public class DrawView extends SurfaceView implements SurfaceHolder.Callback {
         super(context);
         getHolder().addCallback(this);
         detector = new ScaleGestureDetector(context, new MyScaleListener());
+
 
     }
 
@@ -100,10 +104,12 @@ public class DrawView extends SurfaceView implements SurfaceHolder.Callback {
                 Planet toThePlanet = isPlanet(realX, realY);
                 if (toThePlanet != null) {
                     Goal goal = new Goal(toThePlanet);
-                    List<Ship> listOfShips = new ArrayList<>();
-                    listOfShips.addAll(planetInFocus.getShips());
-                    goals.put(goal, listOfShips);
-                    toThePlanet.getShips().addAll(planetInFocus.getShips());
+                    List<Ship> shipList = new ArrayList<>();
+                    shipList.addAll(planetInFocus.getShips());
+                    for (Ship ship : shipList)
+                        ship.setPlanet(toThePlanet);
+                    goals.put(goal, shipList);
+                    toThePlanet.getShips().addAll(shipList);
                     planetInFocus.getShips().clear();
                     planetInFocus = null;
                 }
@@ -143,10 +149,11 @@ public class DrawView extends SurfaceView implements SurfaceHolder.Callback {
 
         private boolean running = false;
         private SurfaceHolder surfaceHolder;
-        private float t = 0.01f;
+        private float t = 0.02f;
 
         public DrawThread(SurfaceHolder surfaceHolder) {
             this.surfaceHolder = surfaceHolder;
+            preRenderOfShip();
         }
 
         private void drawBackground(Canvas canvas) {
@@ -187,12 +194,12 @@ public class DrawView extends SurfaceView implements SurfaceHolder.Callback {
                 ArrayList<Ship> shipDelList = new ArrayList<>();
                 for (Ship ship : pair.getValue()) {
                     float len = Vector.len(ship, pl);
-                    if (len < pl.getRadius() + 10) {
+                    if (len < pl.getRadius() * 1.8f) {
                         shipDelList.add(ship);
                         continue;
                     }
                     ship.setAccelX(ship.getAccelX() + (pl.getX() - ship.getX()) / len * ship.getGoalAccel());
-                    ship.setStartY(ship.getAccelY() + (pl.getY() - ship.getY()) / len * ship.getGoalAccel());
+                    ship.setAccelY(ship.getAccelY() + (pl.getY() - ship.getY()) / len * ship.getGoalAccel());
                 }
                 goals.get(goal).removeAll(shipDelList);
                 if (goals.get(goal).isEmpty())
@@ -200,6 +207,19 @@ public class DrawView extends SurfaceView implements SurfaceHolder.Callback {
             }
             for (int i = 0; i < goalDelList.size(); i++)
                 goals.remove(goalDelList.get(i));
+            for (Player player : players)
+                for (Ship ship : player.getShips()) {
+                    float len = Vector.len(ship, ship.getPlanet());
+                    if (len < 15 + ship.getPlanet().getRadius()) {
+                        ship.setAccelX(ship.getAccelX() + (ship.getPlanet().getX() - ship.getX()) / len * -200);
+                        ship.setAccelY(ship.getAccelY() + (ship.getPlanet().getY() - ship.getY()) / len * -200);
+                    }
+                    if (len > 40 + ship.getPlanet().getRadius()) {
+                        ship.setAccelX(ship.getAccelX() + (ship.getPlanet().getX() - ship.getX()) / len * 100);
+                        ship.setAccelY(ship.getAccelY() + (ship.getPlanet().getY() - ship.getY()) / len * 100);
+                    }
+                }
+
 //             Keep calm. It's just O(n^2) collision detection
 //            for (Player player : players) {
 //                for (Ship ship : player.getShips()) {
@@ -224,6 +244,7 @@ public class DrawView extends SurfaceView implements SurfaceHolder.Callback {
 
         private void nextPosition() {
             float kFriction = 0.9f;
+            //float maxVel = -1;
             setNewAcceleration();
             for (Player player : players) {
                 for (Ship ship : player.getShips()) {
@@ -231,15 +252,28 @@ public class DrawView extends SurfaceView implements SurfaceHolder.Callback {
                     ship.setY(ship.getY() + ship.getVelY() * t + ship.getAccelY() * t * t / 2);
                     ship.setVelX(ship.getVelX() + ship.getAccelX() * t);
                     ship.setVelY(ship.getVelY() + ship.getAccelY() * t);
-//                    ship.setVelX(ship.getVelX() * kFriction);
-//                    ship.setVelY(ship.getVelY() * kFriction);
-                    float lenVel = Vector.len(ship.getVelX(), ship.getVelY());
-                    ship.setCos(-(ship.getVelY()) / lenVel);
-                    ship.setSin((ship.getVelX()) / lenVel);
+                    ship.setVelX(ship.getVelX() * kFriction);
+                    ship.setVelY(ship.getVelY() * kFriction);
+//                    if (ship.getVelocity() < 20) {
+//                        ship.setVelX(0);
+//                        ship.setVelY(0);
+//                    }
+
+                    if (ship.getVelocity() != 0) {
+                        float lenVel = Vector.len(ship.getVelX(), ship.getVelY());
+                        ship.setCos(-(ship.getVelY()) / lenVel);
+                        ship.setSin((ship.getVelX()) / lenVel);
+                    } else {
+                        ship.setCos(0);
+                        ship.setSin(1);
+                    }
+                    //maxVel = Math.max(maxVel, ship.getVelocity());
 
                 }
 
+
             }
+            //GameActivity.log(String.valueOf(maxVel));
 
         }
 
@@ -254,20 +288,33 @@ public class DrawView extends SurfaceView implements SurfaceHolder.Callback {
 
         }
 
+        private void preRenderOfShip() {
+//            shipBitmap = Bitmap.createBitmap(10, 11, Bitmap.Config.ALPHA_8);
+//            shipCanvas = new Canvas(shipBitmap);
+            shipPath = new Path();
+            shipPath.moveTo(0, -5);
+            shipPath.lineTo(-5, 5);
+            shipPath.lineTo(0, 2);
+            shipPath.lineTo(5, 5);
+            shipPath.lineTo(0, -5);
+            shipPath.close();
+
+        }
+
         private void drawAllObjects(Canvas canvas) {
             Paint paint = new Paint();
             paint.setAntiAlias(true);
             paint.setStyle(Paint.Style.FILL_AND_STROKE);
             for (Planet p : planets) {
                 RectF rectf = new RectF(p.getX() - p.getRadius(), p.getY() - p.getRadius(), p.getX() + p.getRadius(), p.getY() + p.getRadius());
-                paint.setColor(Color.DKGRAY);
-                canvas.drawCircle(p.getX(), p.getY(), p.getRadius(), paint);
                 paint.setColor(Color.YELLOW);
                 canvas.drawArc(rectf, Planet.getStartAngle(), 3.6f * p.getVelOfShip(), true, paint);
                 paint.setColor(Color.GREEN);
                 canvas.drawArc(rectf, Planet.getStartAngle() + 3.6f * p.getVelOfShip(), 3.6f * p.getHealthOfShip(), true, paint);
                 paint.setColor(Color.RED);
                 canvas.drawArc(rectf, Planet.getStartAngle() + 3.6f * (p.getVelOfShip() + p.getHealthOfShip()), 3.6f * p.getDamageOfShip(), true, paint);
+                paint.setColor(p.getPlayer().getColor());
+                canvas.drawCircle(p.getX(), p.getY(), p.getRadius() / 2, paint);
             }
             if (planetInFocus != null) {
                 float strokeWidth = 10;
@@ -281,20 +328,22 @@ public class DrawView extends SurfaceView implements SurfaceHolder.Callback {
             for (Planet p : planets)
                 for (Planet.AirDefense a : p.getAirDefenses()) {
                     paint.setStrokeWidth(15 * a.getHealth() / 100);
-                    paint.setColor(Color.LTGRAY);
+                    paint.setColor(Color.DKGRAY);
                     canvas.drawCircle(p.getX(), p.getY(), p.getRadius() * 1.8f, paint);
                 }
             for (Player p : players)
                 for (Ship s : p.getShips()) {
                     paint.setColor(p.getColor());
                     Path path = new Path();
-                    path.moveTo(s.getX(), s.getY() - 5);
-                    path.lineTo(s.getX() - 5, s.getY() + 5);
-                    path.lineTo(s.getX(), s.getY() + 2);
-                    path.lineTo(s.getX() + 5, s.getY() + 5);
-                    path.lineTo(s.getX(), s.getY() - 5);
+                    path.addPath(shipPath);
+//                    path.moveTo(s.getX(), s.getY() - 5);
+//                    path.lineTo(s.getX() - 5, s.getY() + 5);
+//                    path.lineTo(s.getX(), s.getY() + 2);
+//                    path.lineTo(s.getX() + 5, s.getY() + 5);
+//                    path.lineTo(s.getX(), s.getY() - 5);
                     Matrix m = new Matrix();
-                    m.setSinCos(s.getSin(), s.getCos(), s.getX(), s.getY());
+                    m.setSinCos(s.getSin(), s.getCos(), 0, 0);
+                    m.postTranslate(s.getX(), s.getY());
                     path.transform(m);
                     paint.setStyle(Paint.Style.FILL);
                     canvas.drawPath(path, paint);
@@ -327,12 +376,17 @@ public class DrawView extends SurfaceView implements SurfaceHolder.Callback {
         }
 
         private void checkFactories() {
-            for (Planet planet : planets)
-                for (Planet.Factory fact : planet.getFactories())
-                    if (System.currentTimeMillis() - fact.lasTime >= fact.getDuration()) {
-                        fact.lasTime = System.currentTimeMillis();
-                        fact.addShip();
-                    }
+            int n = 0;
+            for (Player p : players)
+                n += p.getShips().size();
+            if (n < 300) {
+                for (Planet planet : planets)
+                    for (Planet.Factory fact : planet.getFactories())
+                        if (System.currentTimeMillis() - fact.lasTime >= fact.getDuration()) {
+                            fact.lasTime = System.currentTimeMillis();
+                            fact.addShip();
+                        }
+            }
 
         }
     }
