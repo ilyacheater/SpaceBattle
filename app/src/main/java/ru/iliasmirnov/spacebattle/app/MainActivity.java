@@ -10,7 +10,6 @@ import android.widget.Button;
 
 
 public class MainActivity extends Activity {
-    GameActivity gameActivity;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
